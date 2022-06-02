@@ -86,10 +86,6 @@ int main(int argc, char **argv)
             // std::cout << "checking..." << std::endl;
 
             scan2coord();
-            // for (int ind = rightindex; i < leftindex; ind++)
-            // {
-            //     /* code */
-            // }
 
             for (int i = rightindex; i < leftindex; i++)
             {
@@ -167,14 +163,6 @@ int main(int argc, char **argv)
         center_of_poles[1] = (pole1_cecnter[1] + pole2_cecnter[1]) / 2;
 
         std::cout << "pole_center : x : " << center_of_poles[0] << ", y : " << center_of_poles[1] << std::endl;
-
-        // // ロボットの正面のセンサの値の表示
-        // if (count >= 5)
-        // {
-        //     int angle_center = scan.ranges.size() / 2;
-        //     std::cout << "scan.ranges[" << angle_center << "] : " << scan.ranges[400] << std::endl;
-        // }
-        // count++;
 
         // // rvizへとscanの値をそのままPublish
         scan_pub.publish(scan);
