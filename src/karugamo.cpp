@@ -184,6 +184,14 @@ void moveStop(ros::Publisher pub)
     pub.publish(pub_msg);
 }
 
+void moveCtrl(ros::Publisher pub, float x, float z)
+{
+
+    pub_msg.angular.z = z;
+    pub_msg.linear.x = x;
+    pub.publish(pub_msg);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "karugamo");
@@ -212,7 +220,7 @@ int main(int argc, char **argv)
     {
         ros::spinOnce();
 
-        setObject();
+        setObject(); // syokai ninsiki
 
         if (isRecognized == 1)
         {
