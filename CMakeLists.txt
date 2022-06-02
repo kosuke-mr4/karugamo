@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -118,6 +119,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${sensor_msgs_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -204,3 +206,6 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(karugamo src/karugamo.cpp)
+target_link_libraries(karugamo ${catkin_LIBRARIES})
