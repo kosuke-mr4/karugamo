@@ -26,18 +26,24 @@ int main(int argc, char **argv)
     ros::Publisher scan_pub = nh.advertise<sensor_msgs::LaserScan>("scan_pub", 10);
     ros::Rate loop_rate(10);
 
+    sleep(1);
+
+    // std::cout << "sleep ato";
+
     ros::spinOnce();
     int count = 0;
+
+    // std::cout << "while mae";
 
     while (ros::ok())
     {
         ros::spinOnce();
 
         // // ロボットの正面のセンサの値の表示
-        if (count == 5)
+        if (count >= 5)
         {
             int angle_center = scan.ranges.size() / 2;
-            std::cout << "scan.ranges[" << angle_center << "] : " << scan.ranges[384] << std::endl;
+            std::cout << "scan.ranges[" << angle_center << "] : " << scan.ranges[400] << std::endl;
         }
         count++;
 
