@@ -1,7 +1,23 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 
+// add for morving
+#include "std_msgs/Int64.h"
+#include "geometry_msgs/Twist.h"
+
+// odom
+#include "nav_msgs/Odometry.h"
+#include "tf/transform_broadcaster.h"
+
+#include "math.h"
+
 sensor_msgs::LaserScan scan;
+
+nav_msgs::Odometry pos;
+geometry_msgs::Twist pub_msg;
+
+double roll, pitch, yaw;
+float x, y, z;
 
 // はじめに取得した値を格納
 double scan_coord[726][2];
@@ -57,12 +73,53 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_)
     scan.intensities = scan_->intensities;
 }
 
+void odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
+{
+    pos.header = msg->header;
+    pos.child_frame_id = msg->child_frame_id;
+    pos.pose = msg->pose;
+    pos.twist = msg->twist;
+
+    // (x, y, z)の取得
+    x = msg->pose.pose.position.x;
+    y = msg->pose.pose.position.y;
+    z = msg->pose.pose.position.z;
+
+    // roll, pitch, yawへの変換、取得
+    tf::Quaternion quat(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
+    tf::Matrix3x3 m(quat);
+    m.getRPY(roll, pitch, yaw);
+}
+
+void moveFormard(ros::Publisher pub, float x)
+{
+    pub_msg.angular.z = 0;
+    pub_msg.linear.x = x; // heisinn sokudo
+    pub.publish(pub_msg);
+}
+
+void moveStop(ros::Publisher pub)
+{
+    pub_msg.angular.z = 0;
+    pub_msg.linear.x = 0;
+    pub.publish(pub_msg);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "karugamo");
+
     ros::NodeHandle nh;
+
     ros::Subscriber scan_sub = nh.subscribe("scan", 10, scanCallback);
     ros::Publisher scan_pub = nh.advertise<sensor_msgs::LaserScan>("scan_pub", 10);
+
+    ros::Subscriber odom_sub = nh.subscribe("odom", 1000, odom_callback);
+    ros::Publisher pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+
+    pos.pose.pose.position.x = 0.0;
+    pos.pose.pose.position.y = 0.0;
+
     ros::Rate loop_rate(10);
 
     sleep(1);
@@ -153,16 +210,36 @@ int main(int argc, char **argv)
             }
         }
 
-        std::cout << "center 1 , x :" << pole1_cecnter[0];
-        std::cout << " y : " << pole1_cecnter[1] << std::endl;
+        if (isRecognized == 1)
+        {
+            std::cout << "center 1 , x :" << pole1_cecnter[0];
+            std::cout << " y : " << pole1_cecnter[1] << std::endl;
 
-        std::cout << "center 2 , x :" << pole2_cecnter[0];
-        std::cout << " y : " << pole2_cecnter[1] << std::endl;
+            std::cout << "center 2 , x :" << pole2_cecnter[0];
+            std::cout << " y : " << pole2_cecnter[1] << std::endl;
 
-        center_of_poles[0] = (pole1_cecnter[0] + pole2_cecnter[0]) / 2;
-        center_of_poles[1] = (pole1_cecnter[1] + pole2_cecnter[1]) / 2;
+            center_of_poles[0] = (pole1_cecnter[0] + pole2_cecnter[0]) / 2;
+            center_of_poles[1] = (pole1_cecnter[1] + pole2_cecnter[1]) / 2;
 
-        std::cout << "pole_center : x : " << center_of_poles[0] << ", y : " << center_of_poles[1] << std::endl;
+            std::cout << "pole_center : x : " << center_of_poles[0] << ", y : " << center_of_poles[1] << std::endl;
+
+            isRecognized = 2;
+        }
+
+        double distanceFromCenter = returnDistance((center_of_poles[0] - x), (center_of_poles[1] - y));
+
+        if (distanceFromCenter > 0.3)
+        {
+            moveFormard(pub, 0.1);
+        }
+        else if (0.2 < distanceFromCenter || distanceFromCenter < 0.3)
+        {
+            moveStop(pub);
+        }
+        else
+        {
+            moveFormard(pub, -0.1);
+        }
 
         // // rvizへとscanの値をそのままPublish
         scan_pub.publish(scan);
