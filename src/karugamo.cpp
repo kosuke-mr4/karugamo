@@ -33,6 +33,9 @@ double y_max_coord[2] = {-100, -100};
 
 double center_of_poles[2] = {0, 0};
 
+int rightindex = 200;
+int leftindex = 530;
+
 int isRecognized = 0;
 
 // Urgの値を二次元空間で保存
@@ -56,6 +59,82 @@ void scan2coord()
 double returnDistance(double x, double y)
 {
     return (sqrt(pow(x, 2.0) + pow(y, 2.0)));
+}
+
+void setObject()
+{
+    //指定範囲で足の認識を行う
+    while (isRecognized == 0)
+    {
+        // std::cout << "checking..." << std::endl;
+
+        scan2coord();
+
+        for (int i = rightindex; i < leftindex; i++)
+        {
+            // std::cout << "x :" << scan_coord[i][0];
+            // std::cout << "y :" << scan_coord[i][1] << std::endl;
+
+            if (abs(scan_coord[i][0]) < 5 && abs(scan_coord[i][1]) < 5) // isfinite(scan_coord[i][0])
+            {
+                // std::cout << "x :" << scan_coord[i][0];
+                // std::cout << ", y :" << scan_coord[i][1] << std::endl;
+                // x
+                if (scan_coord[i][0] > x_max_coord[0])
+                {
+                    x_max_coord[0] = scan_coord[i][0];
+                    x_max_coord[1] = scan_coord[i][1];
+                }
+
+                // y
+                if (scan_coord[i][1] > y_max_coord[1])
+                {
+                    y_max_coord[0] = scan_coord[i][0];
+                    y_max_coord[1] = scan_coord[i][1];
+                }
+            }
+            else
+            // Nan no taiou
+            {
+                if (!(x_max_coord[0] == -100)) // 値がなにか残ってたらコミットしてクリア
+                {
+                    if (pole1_cecnter[0] == 0)
+                    {
+                        pole1_cecnter[0] = (x_max_coord[0] + y_max_coord[0]) / 2;
+                        pole1_cecnter[1] = (x_max_coord[1] + y_max_coord[1]) / 2;
+
+                        std::cout << " pole1 is changed : " << pole1_cecnter[0] << pole1_cecnter[1] << std::endl;
+
+                        x_max_coord[0] = -100;
+                        x_max_coord[1] = -100;
+
+                        y_max_coord[0] = -100;
+                        y_max_coord[1] = -100;
+                    }
+                    else if (pole2_cecnter[0] == 0)
+                    {
+                        pole2_cecnter[0] = (x_max_coord[0] + y_max_coord[0]) / 2;
+                        pole2_cecnter[1] = (x_max_coord[1] + y_max_coord[1]) / 2;
+
+                        std::cout << " pole2 is changed : " << pole2_cecnter[0] << pole2_cecnter[1] << std::endl;
+
+                        x_max_coord[0] = -100;
+                        x_max_coord[1] = -100;
+
+                        y_max_coord[0] = -100;
+                        y_max_coord[1] = -100;
+                    }
+                }
+            }
+        }
+        double center1Range = returnDistance(pole1_cecnter[0], pole2_cecnter[1]);
+        double center2Range = returnDistance(pole2_cecnter[0], pole2_cecnter[1]);
+
+        if (0.2 < center1Range && center1Range < 1.0 && 0.2 < center2Range && center2Range < 1.0 && isRecognized == 0)
+        {
+            isRecognized = 1;
+        }
+    }
 }
 
 void scanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_)
@@ -125,10 +204,6 @@ int main(int argc, char **argv)
     sleep(1);
 
     ros::spinOnce();
-    int count = 0;
-
-    int rightindex = 200;
-    int leftindex = 530;
 
     std::cout << " robot will wait 5 seconds , stand front plz" << std::endl;
     sleep(5);
@@ -137,78 +212,7 @@ int main(int argc, char **argv)
     {
         ros::spinOnce();
 
-        //指定範囲で足の認識を行う
-        while (isRecognized == 0)
-        {
-            // std::cout << "checking..." << std::endl;
-
-            scan2coord();
-
-            for (int i = rightindex; i < leftindex; i++)
-            {
-                // std::cout << "x :" << scan_coord[i][0];
-                // std::cout << "y :" << scan_coord[i][1] << std::endl;
-
-                if (abs(scan_coord[i][0]) < 5 && abs(scan_coord[i][1]) < 5) // isfinite(scan_coord[i][0])
-                {
-                    // std::cout << "x :" << scan_coord[i][0];
-                    // std::cout << ", y :" << scan_coord[i][1] << std::endl;
-                    // x
-                    if (scan_coord[i][0] > x_max_coord[0])
-                    {
-                        x_max_coord[0] = scan_coord[i][0];
-                        x_max_coord[1] = scan_coord[i][1];
-                    }
-
-                    // y
-                    if (scan_coord[i][1] > y_max_coord[1])
-                    {
-                        y_max_coord[0] = scan_coord[i][0];
-                        y_max_coord[1] = scan_coord[i][1];
-                    }
-                }
-                else
-                // Nan no taiou
-                {
-                    if (!(x_max_coord[0] == -100)) // 値がなにか残ってたらコミットしてクリア
-                    {
-                        if (pole1_cecnter[0] == 0)
-                        {
-                            pole1_cecnter[0] = (x_max_coord[0] + y_max_coord[0]) / 2;
-                            pole1_cecnter[1] = (x_max_coord[1] + y_max_coord[1]) / 2;
-
-                            std::cout << " pole1 is changed : " << pole1_cecnter[0] << pole1_cecnter[1] << std::endl;
-
-                            x_max_coord[0] = -100;
-                            x_max_coord[1] = -100;
-
-                            y_max_coord[0] = -100;
-                            y_max_coord[1] = -100;
-                        }
-                        else if (pole2_cecnter[0] == 0)
-                        {
-                            pole2_cecnter[0] = (x_max_coord[0] + y_max_coord[0]) / 2;
-                            pole2_cecnter[1] = (x_max_coord[1] + y_max_coord[1]) / 2;
-
-                            std::cout << " pole2 is changed : " << pole2_cecnter[0] << pole2_cecnter[1] << std::endl;
-
-                            x_max_coord[0] = -100;
-                            x_max_coord[1] = -100;
-
-                            y_max_coord[0] = -100;
-                            y_max_coord[1] = -100;
-                        }
-                    }
-                }
-            }
-            double center1Range = returnDistance(pole1_cecnter[0], pole2_cecnter[1]);
-            double center2Range = returnDistance(pole2_cecnter[0], pole2_cecnter[1]);
-
-            if (0.2 < center1Range && center1Range < 1.0 && 0.2 < center2Range && center2Range < 1.0)
-            {
-                isRecognized = 1;
-            }
-        }
+        setObject();
 
         if (isRecognized == 1)
         {
@@ -230,7 +234,7 @@ int main(int argc, char **argv)
 
         if (distanceFromCenter > 0.3)
         {
-            moveFormard(pub, 0.1);
+            moveFormard(pub, 0.3);
         }
         else if (0.2 < distanceFromCenter || distanceFromCenter < 0.3)
         {
@@ -238,7 +242,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            moveFormard(pub, -0.1);
+            moveFormard(pub, -0.3);
         }
 
         // // rvizへとscanの値をそのままPublish
