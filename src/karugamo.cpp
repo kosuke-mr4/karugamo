@@ -94,7 +94,8 @@ void setObject(int rightindex, int leftindex)
                 }
 
                 // y
-                if (scan_coord[i][1] > y_max_coord[1])
+                // hugou ga guimon
+                if (abs(scan_coord[i][1]) > abs(y_max_coord[1]))
                 {
                     y_max_coord[0] = scan_coord[i][0];
                     y_max_coord[1] = scan_coord[i][1];
