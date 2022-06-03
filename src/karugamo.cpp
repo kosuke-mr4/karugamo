@@ -296,17 +296,20 @@ int main(int argc, char **argv)
         if (distanceFromCenter > 0.5)
         {
             std::cout << "go forward" << std::endl;
-            moveFormard(pub, 0.3);
+            // moveFormard(pub, 0.3);
+            moveCtrl(pub, 0.3, 0);
         }
         else if (0.4 < distanceFromCenter && distanceFromCenter < 0.5)
         {
             std::cout << "stop!" << std::endl;
-            moveStop(pub);
+            // moveStop(pub);
+            moveCtrl(pub, 0, 0);
         }
         else
         {
             std::cout << "go BACK" << std::endl;
-            moveFormard(pub, -0.3);
+            // moveFormard(pub, -0.3);
+            moveCtrl(pub, -0.3, 0);
         }
 
         // // rvizへとscanの値をそのままPublish
