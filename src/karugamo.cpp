@@ -228,6 +228,89 @@ void moveCtrl(ros::Publisher pub, float x, float z)
     pub.publish(pub_msg);
 }
 
+// (x, y)に向かうプログラム
+void go_pos_GL(double x, double y)
+{
+    // 制御のパラメータ
+    const double k_v = 0.8;
+    const double k_w = 3.0;
+
+    //最大速度、最大角速度
+    const double v_max = 0.3;
+    const double w_max = 0.4;
+
+    tf::Quaternion quat(pos.pose.pose.orientation.x, pos.pose.pose.orientation.y, pos.pose.pose.orientation.z, pos.pose.pose.orientation.w);
+    tf::Matrix3x3 m(quat);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    // 現在のロボットの位置、姿勢
+    double x0 = pos.pose.pose.position.x;
+    double y0 = pos.pose.pose.position.y;
+    double theta = yaw;
+
+    // 目標の角度
+    double th = atan2(y, x);
+
+    // 目標点がロボットの正面にあるか背後にあるのかを確認する値
+    double sign = 0;
+    // 目標点との角度
+    double phai = th - theta;
+
+    // 角度を-πからπに収める
+    while ((phai <= -M_PI) || (phai > M_PI / 2))
+    {
+        if (phai <= -M_PI)
+        {
+            phai += M_PI;
+        }
+        else
+        {
+            phai -= M_PI;
+        }
+    }
+    if ((phai < -(M_PI / 2)) || (phai >= (M_PI / 2)))
+    {
+        sign = -1;
+    }
+    else
+    {
+        sign = 1;
+    }
+
+    // ロボットと目標点との距離
+    double distance = sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+
+    // 目標点の座標の方向とロボットの向きとの差が大きいほど値が小さくなる角速度を設定
+    double w = k_w * phai;
+
+    // 最大角速度より大きければ最大角速度に設定
+    if (w > w_max)
+        w = w_max;
+    else if (w < -w_max)
+        w = -w_max;
+    // 目標点の座標に近いほど値が小さくなる速度を設定
+    double v = k_w * distance * sign;
+
+    // 最大速度より大きければ最大速度に設定
+    if (v > v_max)
+        v = v_max;
+    else if (v < -v_max)
+        v = -v_max;
+
+    std::cout << "v: " << v << "   w: " << w << std::endl;
+    std::cout << "(x,y,theta) = (" << x0 << "," << y0 << "," << theta << ")" << std::endl;
+    std::cout << "------------------------------" << std::endl;
+
+    // Publishする値の格納
+    pub_msg.linear.x = v;
+    pub_msg.linear.y = 0.0;
+    pub_msg.linear.z = 0.0;
+    pub_msg.angular.x = 0.0;
+    pub_msg.angular.y = 0.0;
+    pub_msg.angular.z = w; // 0?
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "karugamo");
@@ -297,7 +380,9 @@ int main(int argc, char **argv)
         {
             std::cout << "go forward" << std::endl;
             // moveFormard(pub, 0.3);
-            moveCtrl(pub, 0.3, 0);
+            // moveCtrl(pub, 0.3, 0);
+            go_pos_GL(center_of_poles[0], center_of_poles[1]);
+            pub.publish(pub_msg);
         }
         else if (0.4 < distanceFromCenter && distanceFromCenter < 0.5)
         {
