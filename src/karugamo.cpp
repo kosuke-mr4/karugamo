@@ -36,6 +36,11 @@ double center_of_poles[2] = {0, 0};
 int rightindex = 200;
 int leftindex = 530;
 
+int min_leg_index = 1000;
+int max_leg_index = 0;
+
+int diff_index = 30;
+
 int isRecognized = 0;
 
 // Urgの値を二次元空間で保存
@@ -91,6 +96,17 @@ void setObject()
                 {
                     y_max_coord[0] = scan_coord[i][0];
                     y_max_coord[1] = scan_coord[i][1];
+                }
+
+                // min , max の更新
+                if (i < min_leg_index)
+                {
+                    min_leg_index = i;
+                }
+
+                if (max_leg_index < i)
+                {
+                    max_leg_index = i;
                 }
             }
             else
@@ -224,6 +240,10 @@ int main(int argc, char **argv)
 
         if (isRecognized == 1)
         {
+
+            std::cout << "min_leg : " << min_leg_index << std::endl;
+            std::cout << "max_leg : " << max_leg_index << std::endl;
+
             std::cout << "center 1 , x :" << pole1_cecnter[0];
             std::cout << " y : " << pole1_cecnter[1] << std::endl;
 
