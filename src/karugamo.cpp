@@ -149,9 +149,13 @@ void setObject(int rightindex, int leftindex)
         double center1Range = returnDistance(pole1_cecnter[0], pole2_cecnter[1]);
         double center2Range = returnDistance(pole2_cecnter[0], pole2_cecnter[1]);
 
-        if (0.2 < center1Range && center1Range < 1.0 && 0.2 < center2Range && center2Range < 1.0 && isRecognized == 0)
+        if (0.2 < center1Range && center1Range < 1.5 && 0.2 < center2Range && center2Range < 1.5 && isRecognized == 0)
         {
             isRecognized = 1;
+        }
+        else
+        {
+            std::cout << "invalid pole range" << std::endl;
         }
     }
 }
@@ -272,7 +276,7 @@ int main(int argc, char **argv)
         // isRecognized = 2;
         // }
 
-        double distanceFromCenter = returnDistance((center_of_poles[0] - x), (center_of_poles[1] - y));
+        double distanceFromCenter = returnDistance(center_of_poles[0], center_of_poles[1]);
 
         if (distanceFromCenter > 0.5)
         {
