@@ -260,11 +260,11 @@ int main(int argc, char **argv)
 
         double distanceFromCenter = returnDistance((center_of_poles[0] - x), (center_of_poles[1] - y));
 
-        if (distanceFromCenter > 0.3)
+        if (distanceFromCenter > 0.5)
         {
             moveFormard(pub, 0.3);
         }
-        else if (0.2 < distanceFromCenter || distanceFromCenter < 0.3)
+        else if (0.4 < distanceFromCenter || distanceFromCenter < 0.5)
         {
             moveStop(pub);
         }
