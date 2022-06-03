@@ -29,12 +29,12 @@ double pole1_cecnter[2] = {};
 double pole2_cecnter[2] = {};
 
 double x_max_coord[2] = {-100, -100};
-double y_max_coord[2] = {-100, -100};
+double y_max_coord[2] = {0, 0};
 
 double center_of_poles[2] = {0, 0};
 
-int default_rightindex = 200;
-int default_leftindex = 530;
+int default_rightindex = 230;
+int default_leftindex = 500;
 
 int min_leg_index = 1000;
 int max_leg_index = 0;
@@ -53,7 +53,7 @@ void scan2coord()
         th = th - 135.0; // zikki
         // th = th - 120.0;
         double theta = th * M_PI / 180.0;
-        if (!(scan.ranges[i] <= 1.0) || scan.ranges[i] < 0.1) // 1m以上は無視する
+        if (!(scan.ranges[i] <= 2.0) || scan.ranges[i] < 0.1) // 1m以上は無視する
             scan.ranges[i] = 100.0;
         scan_coord[i][0] = scan.ranges[i] * cos(theta);
         scan_coord[i][1] = scan.ranges[i] * sin(theta);
@@ -82,7 +82,7 @@ void setObject(int rightindex, int leftindex)
             // std::cout << "x :" << scan_coord[i][0];
             // std::cout << "y :" << scan_coord[i][1] << std::endl;
 
-            if (abs(scan_coord[i][0]) < 5 && abs(scan_coord[i][1]) < 5) // isfinite(scan_coord[i][0])
+            if (abs(scan_coord[i][0]) < 2 && abs(scan_coord[i][1]) < 2) // isfinite(scan_coord[i][0])
             {
                 // std::cout << "x :" << scan_coord[i][0];
                 // std::cout << ", y :" << scan_coord[i][1] << std::endl;
@@ -96,6 +96,7 @@ void setObject(int rightindex, int leftindex)
                 // y
                 // hugou ga guimon
                 if (abs(scan_coord[i][1]) > abs(y_max_coord[1]))
+                // if (scan_coord[i][1] > y_max_coord[1])
                 {
                     y_max_coord[0] = scan_coord[i][0];
                     y_max_coord[1] = scan_coord[i][1];
@@ -127,8 +128,8 @@ void setObject(int rightindex, int leftindex)
                         x_max_coord[0] = -100;
                         x_max_coord[1] = -100;
 
-                        y_max_coord[0] = -100;
-                        y_max_coord[1] = -100;
+                        y_max_coord[0] = 0;
+                        y_max_coord[1] = 0;
                     }
                     else if (pole2_cecnter[0] == 0)
                     {
@@ -140,8 +141,8 @@ void setObject(int rightindex, int leftindex)
                         x_max_coord[0] = -100;
                         x_max_coord[1] = -100;
 
-                        y_max_coord[0] = -100;
-                        y_max_coord[1] = -100;
+                        y_max_coord[0] = 0;
+                        y_max_coord[1] = 0;
                     }
                 }
             }
@@ -155,6 +156,11 @@ void setObject(int rightindex, int leftindex)
         }
         else
         {
+            std::cout << "center 1 , x :" << pole1_cecnter[0];
+            std::cout << " y : " << pole1_cecnter[1] << std::endl;
+
+            std::cout << "center 2 , x :" << pole2_cecnter[0];
+            std::cout << " y : " << pole2_cecnter[1] << std::endl;
             std::cout << "invalid pole range" << std::endl;
         }
     }
@@ -277,6 +283,8 @@ int main(int argc, char **argv)
         // }
 
         double distanceFromCenter = returnDistance(center_of_poles[0], center_of_poles[1]);
+
+        // std::cout << "distanceFromCenter : " << distanceFromCenter << std::endl;
 
         if (distanceFromCenter > 0.5)
         {
