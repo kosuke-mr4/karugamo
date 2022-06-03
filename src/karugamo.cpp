@@ -233,7 +233,7 @@ void line_GL(double x, double y, double th)
 {
     // 制御のパラメータ(調整必須)
     double k_eta = 20;  // 80 // 400
-    double k_phai = 20; // 30 // 300
+    double k_phai = 30; // 30 // 300
     double k_w = 30;    // 20 // 200
 
     // if (th > M_PI / 2)
