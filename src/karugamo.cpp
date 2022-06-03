@@ -228,6 +228,110 @@ void moveCtrl(ros::Publisher pub, float x, float z)
     pub.publish(pub_msg);
 }
 
+//　直線追従を行う関数
+void line_GL(double x, double y, double th)
+{
+    // 制御のパラメータ(調整必須)
+    double k_eta = 20;  // 80 // 400
+    double k_phai = 20; // 30 // 300
+    double k_w = 30;    // 20 // 200
+
+    // if (th > M_PI / 2)
+    // {
+    // 	k_eta = -100;
+    // 	k_phai = 40;
+    // }
+
+    // std::cout << "k_eta : " << k_eta << std::endl;
+    // std::cout << "k_phai : " << k_phai << std::endl;
+    // std::cout << "k_w : " << k_w << std::endl;
+
+    // 速度と角速度の最大値
+    const double v_max = 0.3;
+    const double w_max = 0.2;
+
+    tf::Quaternion quat(pos.pose.pose.orientation.x, pos.pose.pose.orientation.y, pos.pose.pose.orientation.z, pos.pose.pose.orientation.w);
+    tf::Matrix3x3 m(quat);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    // 現在のロボットの位置、姿勢
+    double x0 = pos.pose.pose.position.x;
+    double y0 = pos.pose.pose.position.y;
+    double theta = yaw;
+
+    // 速度
+    double v0 = 0.3;
+
+    // 現在の角速度
+    double w0 = pos.twist.twist.angular.z;
+
+    // ロボットと直線の距離
+    // double eta = 0;
+    // if (th == M_PI / 2.0)
+    // 	eta = x0 - x;
+    // else
+    // 	eta = (-tan(th) * x0 + y0 - y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1);
+    // if (eta > 4.0)
+    // 	eta = 4.0;
+    // else if (eta < -4.0)
+    // 	eta = -4.0;
+
+    double eta = 0;
+    if (th == M_PI / 2.0)
+        eta = -(x0 - x);
+    else if (th == -M_PI / 2.0)
+        eta = x0 - x;
+    else if (abs(th) < M_PI / 2.0)
+        eta = (-tan(th) * x0 + y0 - y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1);
+    else
+        eta = -(-tan(th) * x0 + y0 - y + x * tan(th)) / sqrt(tan(th) * tan(th) + 1);
+    if (eta > 4.0)
+        eta = 4.0;
+    else if (eta < -4.0)
+        eta = -4.0;
+
+    // 直線に対するロボットの向き
+    double phai = theta - th;
+    while (phai <= -M_PI || M_PI <= phai)
+    {
+        if (phai <= -M_PI)
+            phai = phai + 2 * M_PI;
+        else
+            phai = phai - 2 * M_PI;
+    }
+
+    // 目標となるロボットの角速度と現在の角速度の差
+    double w_diff = w0;
+
+    // 角速度
+    double w = w0 + (-k_eta * eta - k_phai * phai - k_w * w_diff) * 0.01; // 0.01
+    if (w > w_max)
+        w = w_max;
+    else if (w < -w_max)
+        w = -w_max;
+
+    // 並進速度 sスリップ防止のだけ
+    double v = v0 - abs(w0);
+    if (v > v_max)
+        v = v_max;
+    else if (v < -v_max)
+        v = 0.0;
+
+    // std::cout << "eta: " << eta << "  phai; " << phai << "  w_diff:" << w_diff << std::endl;
+    // std::cout << "v: " << v << "   w: " << w << std::endl;
+    // std::cout << "(x,y,theta) = (" << x0 << "," << y0 << "," << theta << ")" << std::endl;
+    // std::cout << "------------------------------" << std::endl;
+
+    // 送信する値
+    pub_msg.linear.x = v;
+    pub_msg.linear.y = 0.0;
+    pub_msg.linear.z = 0.0;
+    pub_msg.angular.x = 0.0;
+    pub_msg.angular.y = 0.0;
+    pub_msg.angular.z = w;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "karugamo");
@@ -297,7 +401,13 @@ int main(int argc, char **argv)
         {
             std::cout << "go forward" << std::endl;
             // moveFormard(pub, 0.3);
-            moveCtrl(pub, 0.3, 0);
+            // moveCtrl(pub, 0.3, 0);
+
+            double rad = std::atan2(center_of_poles[1], center_of_poles[0]);
+
+            line_GL(center_of_poles[0], center_of_poles[1], rad);
+
+            pub.publish(pub_msg);
         }
         else if (0.4 < distanceFromCenter && distanceFromCenter < 0.5)
         {
