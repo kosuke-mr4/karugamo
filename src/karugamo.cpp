@@ -29,7 +29,7 @@ double pole1_cecnter[2] = {};
 double pole2_cecnter[2] = {};
 
 double x_max_coord[2] = {-100, -100};
-double y_max_coord[2] = {0, 0};
+double y_max_coord[2] = {-100, -100};
 
 double center_of_poles[2] = {0, 0};
 
@@ -53,7 +53,7 @@ void scan2coord()
         th = th - 135.0; // zikki
         // th = th - 120.0;
         double theta = th * M_PI / 180.0;
-        if (!(scan.ranges[i] <= 2.0) || scan.ranges[i] < 0.1) // 1m以上は無視する
+        if (!(scan.ranges[i] <= 1.5) || scan.ranges[i] < 0.1) // 1m以上は無視する
             scan.ranges[i] = 100.0;
         scan_coord[i][0] = scan.ranges[i] * cos(theta);
         scan_coord[i][1] = scan.ranges[i] * sin(theta);
@@ -68,8 +68,11 @@ double returnDistance(double x, double y)
 
 void setObject(int rightindex, int leftindex)
 {
-    pole1_cecnter[2] = {};
-    pole2_cecnter[2] = {};
+    pole1_cecnter[0] = 0;
+    pole1_cecnter[1] = 0;
+    pole2_cecnter[0] = 0;
+    pole2_cecnter[1] = 0;
+
     //指定範囲で足の認識を行う
     while (isRecognized == 0)
     {
@@ -82,7 +85,7 @@ void setObject(int rightindex, int leftindex)
             // std::cout << "x :" << scan_coord[i][0];
             // std::cout << "y :" << scan_coord[i][1] << std::endl;
 
-            if (abs(scan_coord[i][0]) < 2 && abs(scan_coord[i][1]) < 2) // isfinite(scan_coord[i][0])
+            if (abs(scan_coord[i][0]) < 1.5 && abs(scan_coord[i][1]) < 1.5) // isfinite(scan_coord[i][0])
             {
                 // std::cout << "x :" << scan_coord[i][0];
                 // std::cout << ", y :" << scan_coord[i][1] << std::endl;
@@ -95,8 +98,8 @@ void setObject(int rightindex, int leftindex)
 
                 // y
                 // hugou ga guimon
-                if (abs(scan_coord[i][1]) > abs(y_max_coord[1]))
-                // if (scan_coord[i][1] > y_max_coord[1])
+                // if (abs(scan_coord[i][1]) > abs(y_max_coord[1]))
+                if (scan_coord[i][1] > y_max_coord[1])
                 {
                     y_max_coord[0] = scan_coord[i][0];
                     y_max_coord[1] = scan_coord[i][1];
@@ -128,8 +131,8 @@ void setObject(int rightindex, int leftindex)
                         x_max_coord[0] = -100;
                         x_max_coord[1] = -100;
 
-                        y_max_coord[0] = 0;
-                        y_max_coord[1] = 0;
+                        y_max_coord[0] = -100;
+                        y_max_coord[1] = -100;
                     }
                     else if (pole2_cecnter[0] == 0)
                     {
@@ -141,8 +144,8 @@ void setObject(int rightindex, int leftindex)
                         x_max_coord[0] = -100;
                         x_max_coord[1] = -100;
 
-                        y_max_coord[0] = 0;
-                        y_max_coord[1] = 0;
+                        y_max_coord[0] = -100;
+                        y_max_coord[1] = -100;
                     }
                 }
             }
@@ -156,6 +159,10 @@ void setObject(int rightindex, int leftindex)
         }
         else
         {
+
+            std::cout << "x_max_coord :  x : " << x_max_coord[0] << ", y : " << x_max_coord[1] << std::endl;
+            std::cout << "y_max_coord :  x : " << y_max_coord[0] << ", y : " << y_max_coord[1] << std::endl;
+
             std::cout << "center 1 , x :" << pole1_cecnter[0];
             std::cout << " y : " << pole1_cecnter[1] << std::endl;
 
@@ -288,14 +295,17 @@ int main(int argc, char **argv)
 
         if (distanceFromCenter > 0.5)
         {
+            std::cout << "go forward" << std::endl;
             moveFormard(pub, 0.3);
         }
-        else if (0.4 < distanceFromCenter || distanceFromCenter < 0.5)
+        else if (0.4 < distanceFromCenter && distanceFromCenter < 0.5)
         {
+            std::cout << "stop!" << std::endl;
             moveStop(pub);
         }
         else
         {
+            std::cout << "go BACK" << std::endl;
             moveFormard(pub, -0.3);
         }
 
