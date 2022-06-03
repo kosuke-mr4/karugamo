@@ -33,8 +33,8 @@ double y_max_coord[2] = {-100, -100};
 
 double center_of_poles[2] = {0, 0};
 
-int rightindex = 200;
-int leftindex = 530;
+int default_rightindex = 200;
+int default_leftindex = 530;
 
 int min_leg_index = 1000;
 int max_leg_index = 0;
@@ -66,8 +66,10 @@ double returnDistance(double x, double y)
     return (sqrt(pow(x, 2.0) + pow(y, 2.0)));
 }
 
-void setObject()
+void setObject(int rightindex, int leftindex)
 {
+    pole1_cecnter[2] = {};
+    pole2_cecnter[2] = {};
     //指定範囲で足の認識を行う
     while (isRecognized == 0)
     {
@@ -236,27 +238,38 @@ int main(int argc, char **argv)
     {
         ros::spinOnce();
 
-        setObject(); // syokai ninsiki
-
-        if (isRecognized == 1)
+        if (min_leg_index == 1000)
         {
-
-            std::cout << "min_leg : " << min_leg_index << std::endl;
-            std::cout << "max_leg : " << max_leg_index << std::endl;
-
-            std::cout << "center 1 , x :" << pole1_cecnter[0];
-            std::cout << " y : " << pole1_cecnter[1] << std::endl;
-
-            std::cout << "center 2 , x :" << pole2_cecnter[0];
-            std::cout << " y : " << pole2_cecnter[1] << std::endl;
-
-            center_of_poles[0] = (pole1_cecnter[0] + pole2_cecnter[0]) / 2;
-            center_of_poles[1] = (pole1_cecnter[1] + pole2_cecnter[1]) / 2;
-
-            std::cout << "pole_center : x : " << center_of_poles[0] << ", y : " << center_of_poles[1] << std::endl;
-
-            isRecognized = 2;
+            std::cout << "syokai" << std::endl;
+            setObject(default_rightindex, default_leftindex);
         }
+        else
+        {
+            std::cout << "2 kai me ikou" << std::endl;
+            setObject((min_leg_index - diff_index), (max_leg_index + diff_index));
+        }
+
+        // setObject(); // syokai ninsiki
+
+        // if (isRecognized == 1)
+        // {
+
+        std::cout << "min_leg : " << min_leg_index << std::endl;
+        std::cout << "max_leg : " << max_leg_index << std::endl;
+
+        std::cout << "center 1 , x :" << pole1_cecnter[0];
+        std::cout << " y : " << pole1_cecnter[1] << std::endl;
+
+        std::cout << "center 2 , x :" << pole2_cecnter[0];
+        std::cout << " y : " << pole2_cecnter[1] << std::endl;
+
+        center_of_poles[0] = (pole1_cecnter[0] + pole2_cecnter[0]) / 2;
+        center_of_poles[1] = (pole1_cecnter[1] + pole2_cecnter[1]) / 2;
+
+        std::cout << "pole_center : x : " << center_of_poles[0] << ", y : " << center_of_poles[1] << std::endl;
+
+        // isRecognized = 2;
+        // }
 
         double distanceFromCenter = returnDistance((center_of_poles[0] - x), (center_of_poles[1] - y));
 
@@ -275,6 +288,8 @@ int main(int argc, char **argv)
 
         // // rvizへとscanの値をそのままPublish
         scan_pub.publish(scan);
+
+        isRecognized = 0;
 
         loop_rate.sleep();
     }
