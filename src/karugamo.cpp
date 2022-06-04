@@ -68,6 +68,7 @@ double returnDistance(double x, double y)
 
 void setObject(int rightindex, int leftindex)
 {
+
     pole1_cecnter[0] = 0;
     pole1_cecnter[1] = 0;
     pole2_cecnter[0] = 0;
@@ -169,6 +170,8 @@ void setObject(int rightindex, int leftindex)
             std::cout << "center 2 , x :" << pole2_cecnter[0];
             std::cout << " y : " << pole2_cecnter[1] << std::endl;
             std::cout << "invalid pole range" << std::endl;
+
+            isRecognized = 1;
         }
     }
 }
@@ -237,7 +240,7 @@ void go_pos_GL(double x, double y)
 
     //最大速度、最大角速度
     const double v_max = 0.3;
-    const double w_max = 0.4;
+    const double w_max = 0.6;
 
     tf::Quaternion quat(pos.pose.pose.orientation.x, pos.pose.pose.orientation.y, pos.pose.pose.orientation.z, pos.pose.pose.orientation.w);
     tf::Matrix3x3 m(quat);
