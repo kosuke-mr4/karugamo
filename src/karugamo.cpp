@@ -69,6 +69,16 @@ double returnDistance(double x, double y)
 void setObject(int rightindex, int leftindex)
 {
 
+    if (rightindex < 0)
+    {
+        rightindex = 0;
+    }
+
+    if (leftindex > 725)
+    {
+        leftindex = 725;
+    }
+
     pole1_cecnter[0] = 0;
     pole1_cecnter[1] = 0;
     pole2_cecnter[0] = 0;
